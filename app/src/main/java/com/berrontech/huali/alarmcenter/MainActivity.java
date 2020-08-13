@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 startActivity(TcpMasterTestActivity.class);
                 break;
             case R.id.btnSerialMaster:
+                startActivity(SerialPortMasterTestActivity.class);
                 break;
             default:
                 //Do Nothing

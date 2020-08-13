@@ -62,12 +62,7 @@ public class AsyncModbusMaster implements ThreadFactory {
     }
 
     public void destroyQuiet() {
-        threadPool.execute(new Runnable() {
-            @Override
-            public void run() {
-                modbusMaster.destroy();
-            }
-        });
+        threadPool.execute(modbusMaster::destroy);
     }
 
     public ModbusResponse sendSync(ModbusRequest request) throws ModbusTransportException {
@@ -75,20 +70,17 @@ public class AsyncModbusMaster implements ThreadFactory {
     }
 
     public void sendAsync(final ModbusRequest request, final ModbusCallback<ModbusResponse> callback) {
-        threadPool.execute(new Runnable() {
-            @Override
-            public void run() {
-                Throwable err = null;
-                ModbusResponse response = null;
-                try {
-                    response = modbusMaster.send(request);
-                    callback.onSuccess(response);
-                } catch (ModbusTransportException e) {
-                    err = e;
-                    callback.onFail(e, null);
-                }
-                callback.onComplete(err, response);
+        threadPool.execute(() -> {
+            Throwable err = null;
+            ModbusResponse response = null;
+            try {
+                response = modbusMaster.send(request);
+                callback.onSuccess(response);
+            } catch (ModbusTransportException e) {
+                err = e;
+                callback.onFail(e, null);
             }
+            callback.onComplete(err, response);
         });
     }
 
